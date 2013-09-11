@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "timecop"
 
-  spec.add_runtime_dependency "active_support", "~> 3.0.0"
+  spec.add_runtime_dependency "activesupport", "~> 3.0.20"
   spec.add_runtime_dependency 'i18n' # required by active_support
   spec.add_runtime_dependency 'tzinfo'
   spec.add_runtime_dependency 'tzinfo-data'

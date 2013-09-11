@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     zone_ranger (0.0.1)
-      active_support (~> 3.0.0)
+      activesupport (~> 3.0.20)
       i18n
       tzinfo
       tzinfo-data
@@ -10,9 +10,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    active_support (3.0.0)
-      activesupport (= 3.0.0)
-    activesupport (3.0.0)
+    activesupport (3.0.20)
     diff-lcs (1.2.4)
     i18n (0.6.5)
     rake (10.1.0)
