@@ -25,6 +25,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activesupport", "~> 3.0.20"
   spec.add_runtime_dependency 'i18n' # required by active_support
-  spec.add_runtime_dependency 'tzinfo', '~> 1.0.1'
-  spec.add_runtime_dependency 'tzinfo-data'
+  spec.add_runtime_dependency 'tzinfo', '~> 0.3.35'
+  #spec.add_runtime_dependency 'tzinfo-data'
 end
