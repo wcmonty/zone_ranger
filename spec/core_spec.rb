@@ -118,6 +118,20 @@ describe ZoneRanger::Core do
         end
       end
 
+      context "over utc midnight" do
+        let(:set_timeframe_over_two_days){ ZoneRanger::Core.new("2013-07-24 23:01 UTC", 120, "UTC", :repeat => :weekly, :ending => Time.parse("2013-07-25 UTC")) }
+
+        it "should be active in timeframe" do
+          validate_active(set_timeframe_over_two_days, "2013-07-24 23:02 UTC")
+          validate_active(set_timeframe_over_two_days, "2013-07-25 01:00 UTC")
+        end
+
+        it "should not be active in timeframe" do
+          validate_inactive(set_timeframe_over_two_days, "2013-07-24 23:00 UTC")
+          validate_inactive(set_timeframe_over_two_days, "2013-07-25 01:02 UTC")
+        end
+      end
+
       context "repeated" do
         context "daily" do
           let(:zr_daily) { ZoneRanger::Core.new('2013-04-01 23:01:00 -07:00', 60, "Pacific Time (US & Canada)", :repeat => :daily) }

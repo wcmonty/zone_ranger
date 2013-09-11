@@ -100,11 +100,11 @@ module ZoneRanger
       offset = options.fetch(:offset, 0)
 
       start_date = if repeat?
-        if daily?
-          # shift to the day being checked
-          start_time = zoned_time(current_day + offset.days)
-          start_time.to_date
-        end
+        #if daily?
+        # shift to the day being checked
+        start_time = zoned_time(current_day + offset.days)
+        start_time.to_date
+        #end
       else
         parsed_time_string.to_date
       end
@@ -144,7 +144,7 @@ module ZoneRanger
         when wday1
           zoned_time(time_point).between?(start_at, end_at)
         when wday2
-          yesterday_start, yesterday_end = time_range(start_date, :offset => -1)
+          yesterday_start, yesterday_end = time_range(zoned_time(time_point), :offset => -1)
           zoned_time(time_point).between?(yesterday_start, yesterday_end)
         else false
         end
