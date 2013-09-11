@@ -140,7 +140,7 @@ module ZoneRanger
         wday1 = parsed_time_string.wday
         wday2 = parsed_time_string.tomorrow.wday
 
-        case blackout_date.wday
+        case start_date.wday
         when wday1
           zoned_time(time_point).between?(start_at, end_at)
         when wday2
