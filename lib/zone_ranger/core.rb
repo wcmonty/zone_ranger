@@ -3,7 +3,7 @@ require 'active_support/all'
 module ZoneRanger
   class Core
 
-    attr_reader :start_time_string
+    attr_reader :start_time_string, :repeat_type
     attr_reader :duration_in_seconds
 
     def initialize start_date_time, duration_in_minutes, timezone, options={}
@@ -13,7 +13,7 @@ module ZoneRanger
       @duration_in_seconds = @duration_in_minutes * 60
       @timezone = timezone
 
-      @end_date = options.fetch(:ending, nil)
+      @ending = options.fetch(:ending, nil)
 
       @repeat_type = options.fetch(:repeat, nil)
 
@@ -35,6 +35,10 @@ module ZoneRanger
       @repeat_type == :monthly_by_day_of_week
     end
 
+    def monthly_by_day_of_month?
+      @repeat_type == :monthly_by_day_of_month
+    end
+
     def timezone_object
       ActiveSupport::TimeZone.new((@timezone || "UTC"))
     end
@@ -43,17 +47,19 @@ module ZoneRanger
       return false if not_started_yet?(time_point) || expired?(time_point)
 
       if repeat?
-        return true if daily? && include_for_daily?(time_point)
-        return true if weekly? && include_for_weekly?(time_point)
-        return true if monthly_by_day_of_week? && include_for_monthly_dow?(time_point)
-
-        false
+        included_in_repeating_timeframe? time_point
       else
-        zoned_time(time_point).between?(*time_range(time_point))
+        static_include? time_point
       end
     end
 
+    def static_include? time_point
+      zoned_time(time_point).between?(*time_range(time_point))
+    end
+
     def expired? time=Time.now.utc
+      return false unless @ending
+      zoned_time(time) > zoned_end_date
     end
 
     def zoned_time time=nil
@@ -67,6 +73,14 @@ module ZoneRanger
 
     def zoned_date time=Time.now.utc
       zoned_time(time).to_date
+    end
+
+    def zoned_end_date
+      timezone_object.parse("#{@ending} 23:59:59 #{utc_offset}")
+    end
+
+    def utc_offset
+      ActiveSupport::TimeZone.seconds_to_utc_offset(zoned_time.utc_offset)
     end
 
     def not_started_yet? time
@@ -95,12 +109,8 @@ module ZoneRanger
         parsed_time_string.to_date
       end
 
-      #return [1.hour.ago, 1.hour.ago] if not_started_yet?(current_day)
-
       b_start = timezone_object.parse(parsed_time_string.strftime("#{start_date} %H:%M")).in_time_zone(timezone_object)
       b_end = b_start + duration_in_seconds
-
-      #puts "[ blackout repeat:#{repeat?} ] #{b_start} to #{b_end}"
 
       [b_start, b_end]
     end
@@ -110,6 +120,13 @@ module ZoneRanger
     end
 
     protected
+
+    def included_in_repeating_timeframe? time_point
+      repeat? && (daily? && include_for_daily?(time_point) ||
+            weekly? && include_for_weekly?(time_point) ||
+            monthly_by_day_of_week? && include_for_monthly_dow?(time_point) ||
+            monthly_by_day_of_month? && include_for_monthly_dom?(time_point))
+    end
 
     def include_for_daily? time_point
       zoned_time(time_point).between?(*time_range(time_point, :offset => -1)) || zoned_time(time_point).between?(*time_range(time_point))
@@ -143,6 +160,19 @@ module ZoneRanger
       time_week = Util.week_of_month(zoned_time(time_point))
 
       start_week == time_week && include_for_weekly?(time_point)
+    end
+
+    def include_for_monthly_dom? time_point
+      original_day = parsed_time_string.day
+      today_day = zoned_time(time_point).day
+
+      if today_day == original_day
+        static_include? time_point
+      elsif (today_day == parsed_time_string.tomorrow.day) && Util.crosses_one_utc_midnight?
+        zoned_time(time_point).between?(*time_range(time_point, :offset => -1))
+      else
+        false
+      end
     end
 
   end

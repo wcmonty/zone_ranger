@@ -79,6 +79,27 @@ describe ZoneRanger::Core do
     end
   end
 
+  describe "#expired?" do
+
+    let(:zr_daily) { ZoneRanger::Core.new('2013-04-01 23:01 -04:00', 60, "Eastern Time (US & Canada)", :repeat => :daily, :ending => '2013-06-01')}
+    let(:zr_weekly) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :ending => '2013-06-01', :repeat => :weekly)}
+    let(:zr_monthly_by_day_of_month) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :ending => '2013-06-01', :repeat => :monthly_by_day_of_month)}
+    let(:zr_monthly_by_day_of_week) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :ending => '2013-06-01', :repeat => :monthly_by_day_of_week)}
+
+    it "should return true if the checked time is past the expired time" do
+      [zr_daily, zr_weekly, zr_monthly_by_day_of_month, zr_monthly_by_day_of_week].each do |zr|
+        zr.expired?(Time.parse('2013-06-02 00:00:00 -07:00')).should(be_true, "#{zr.repeat_type} expected EXPIRED")
+      end
+    end
+
+    it "should be false if the checked time is before the expired time" do
+      [zr_daily, zr_weekly, zr_monthly_by_day_of_month, zr_monthly_by_day_of_week].each do |zr|
+        zr.expired?(Time.parse('2013-06-01 00:00:00 -07:00')).should(be_false, "#{zr.repeat_type} expected ACTIVE")
+        zr.expired?(Time.parse('2013-05-01 00:00:00 -07:00')).should(be_false, "#{zr.repeat_type} expected ACTIVE")
+      end
+    end
+  end
+
   describe "#includes?" do
     context "giving a time" do # does the present time fall in the given timeframe?
 
@@ -147,10 +168,29 @@ describe ZoneRanger::Core do
 
         context "monthly" do
           context "day of the month" do
+
+            let(:zr_monthly_dom) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :repeat => :monthly_by_day_of_month) }
+
+            it "should be active if on the day of the month of start_date and within the timeframe" do
+              validate_active(zr_monthly_dom, '2013-05-01 00:02:00 -07:00')
+              validate_active(zr_monthly_dom, '2013-05-01 00:59:00 -07:00')
+              validate_active(zr_monthly_dom, '2013-06-01 00:02:00 -07:00')
+              validate_active(zr_monthly_dom, '2013-06-01 00:59:00 -07:00')
+            end
+              
+            it "should not be active if on the day of the month of start_date and within the timeframe but start_date is in the future" do
+              validate_inactive(zr_monthly_dom, '2013-03-01 00:02:00 -07:00')
+              validate_inactive(zr_monthly_dom, '2013-03-01 00:59:00 -07:00')
+            end
+            
+            it "should not be active if within the timeframe but not on the day of the month" do
+              validate_inactive(zr_monthly_dom, '2013-04-03 00:02:00 -07:00')
+              validate_inactive(zr_monthly_dom, '2013-04-03 00:59:00 -07:00')
+            end
+
           end
 
           context "day of the week" do
-
             let(:zr_monthly_dow) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :repeat => :monthly_by_day_of_week) }
 
             it "should be active if on the same weekday and xth week and inside timeframe" do
@@ -181,6 +221,7 @@ describe ZoneRanger::Core do
               validate_inactive(zr_monthly_dow, "2013-05-06 01:02:00 -07:00")
             end
           end
+
         end
       end
 
