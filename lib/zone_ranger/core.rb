@@ -4,13 +4,12 @@ module ZoneRanger
   class Core
 
     attr_reader :start_time_string, :repeat_type
-    attr_reader :duration_in_seconds
+    attr_reader :duration_in_minutes
 
     def initialize start_date_time, duration_in_minutes, timezone, options={}
 
       @start_time_string = start_date_time
       @duration_in_minutes = duration_in_minutes
-      @duration_in_seconds = @duration_in_minutes * 60
       @timezone = timezone
 
       @ending = options.fetch(:ending, nil)
@@ -110,7 +109,7 @@ module ZoneRanger
       end
 
       b_start = timezone_object.parse(parsed_time_string.strftime("#{start_date} %H:%M")).in_time_zone(timezone_object)
-      b_end = b_start + duration_in_seconds
+      b_end = b_start + duration_in_minutes.minutes
 
       [b_start, b_end]
     end
