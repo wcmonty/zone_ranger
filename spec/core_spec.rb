@@ -80,7 +80,6 @@ describe ZoneRanger::Core do
   end
 
   describe "#expired?" do
-
     let(:zr_daily) { ZoneRanger::Core.new('2013-04-01 23:01 -04:00', 60, "Eastern Time (US & Canada)", :repeat => :daily, :ending => '2013-06-01')}
     let(:zr_weekly) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :ending => '2013-06-01', :repeat => :weekly)}
     let(:zr_monthly_by_day_of_month) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :ending => '2013-06-01', :repeat => :monthly_by_day_of_month)}
@@ -101,6 +100,17 @@ describe ZoneRanger::Core do
   end
 
   describe "#includes?" do
+
+    context "expired" do
+      let(:daily_with_end) { ZoneRanger::Core.new("09:58 -04:00", 841, "Eastern Time (US & Canada)", :repeat => :daily, :ending => '2013-07-17') }
+
+      it "should never return true after the end date - not near UTC midnight" do
+        validate_inactive daily_with_end, "Fri Jul 19 11:57:22 -0400 2013"
+        validate_active daily_with_end, "Fri Jul 16 11:57:22 -0400 2013"
+        validate_active daily_with_end, "Fri Jul 17 23:58:22 -0400 2013"
+      end
+    end
+
     context "giving a time" do # does the present time fall in the given timeframe?
 
       let(:zr) { ZoneRanger::Core.new('2013-04-01 23:01:00 -07:00', 60, "Pacific Time (US & Canada)") }
@@ -184,7 +194,8 @@ describe ZoneRanger::Core do
           context "day of the month" do
 
             let(:zr_monthly_dom) { ZoneRanger::Core.new('2013-04-01 00:01:00 -07:00', 60, "Pacific Time (US & Canada)", :repeat => :monthly_by_day_of_month) }
-
+            let(:zr_monthly_dom2) { ZoneRanger::Core.new("2013-07-17 09:58 -04:00", 120, "Eastern Time (US & Canada)", :repeat => :monthly_by_day_of_month) }
+            
             it "should be active if on the day of the month of start_date and within the timeframe" do
               validate_active(zr_monthly_dom, '2013-05-01 00:02:00 -07:00')
               validate_active(zr_monthly_dom, '2013-05-01 00:59:00 -07:00')
@@ -200,7 +211,10 @@ describe ZoneRanger::Core do
             it "should not be active if within the timeframe but not on the day of the month" do
               validate_inactive(zr_monthly_dom, '2013-04-03 00:02:00 -07:00')
               validate_inactive(zr_monthly_dom, '2013-04-03 00:59:00 -07:00')
+              validate_inactive(zr_monthly_dom2, "Thu Jul 18 9:59:22 -0400 2013")
             end
+
+
 
           end
 

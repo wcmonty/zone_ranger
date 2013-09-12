@@ -136,7 +136,7 @@ module ZoneRanger
       start_date = zoned_time(time_point).to_date
       start_at, end_at = time_range(time_point)
 
-      if Util.crosses_one_utc_midnight?(parsed_time_string, @duration_in_minutes)
+      if crosses_midnight?
         wday1 = parsed_time_string.wday
         wday2 = parsed_time_string.tomorrow.wday
 
@@ -168,11 +168,15 @@ module ZoneRanger
 
       if today_day == original_day
         static_include? time_point
-      elsif (today_day == parsed_time_string.tomorrow.day) && Util.crosses_one_utc_midnight?
+      elsif (today_day == parsed_time_string.tomorrow.day) && crosses_midnight?
         zoned_time(time_point).between?(*time_range(time_point, :offset => -1))
       else
         false
       end
+    end
+
+    def crosses_midnight?
+      Util.crosses_one_utc_midnight?(parsed_time_string, @duration_in_minutes)
     end
 
   end
