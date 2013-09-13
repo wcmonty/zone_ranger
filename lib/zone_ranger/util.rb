@@ -29,5 +29,19 @@ module ZoneRanger
       date1.wday == date2.wday
     end
 
+    def self.calculate_duration_in_minutes starting, ending
+      start_hour = starting.strftime("%H")
+      start_minutes = starting.strftime("%M")
+      start_in_minutes = (start_hour.to_i * 60) + start_minutes.to_i
+
+      finish_hour = ending.strftime("%H").to_i
+      finish_minutes = (finish_hour * 60) + ending.strftime("%M").to_i
+
+      d = finish_minutes - start_in_minutes
+      d += 1440 if d < 0
+
+      d
+    end
+
   end
 end
