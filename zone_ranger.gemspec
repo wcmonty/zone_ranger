@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "timecop", "~> 0.3.5"
+  spec.add_development_dependency "coveralls"
 
   spec.add_runtime_dependency "activesupport", "~> 3.0.20"
   spec.add_runtime_dependency 'i18n' # required by active_support
