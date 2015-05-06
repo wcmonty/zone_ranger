@@ -79,7 +79,7 @@ module ZoneRanger
     end
 
     def utc_offset
-      ActiveSupport::TimeZone.seconds_to_utc_offset(zoned_time.utc_offset)
+      ActiveSupport::TimeZone.seconds_to_utc_offset(zoned_time(start_on_time).utc_offset)
     end
 
     def not_started_yet? time
@@ -88,6 +88,10 @@ module ZoneRanger
 
     def start_on
       parsed_time_string.to_date
+    end
+
+    def start_on_time
+      parsed_time_string.to_time
     end
 
     def started?
