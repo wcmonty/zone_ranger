@@ -79,7 +79,6 @@ module ZoneRanger
     end
 
     def utc_offset
-      binding.pry
       ActiveSupport::TimeZone.seconds_to_utc_offset(zoned_time(start_on_time).utc_offset)
     end
 
